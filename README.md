@@ -49,7 +49,7 @@ Also in the studio:
 ```bash
 pip install ./python
 otps banner "ACHTUNG LEBENSMITTEL" --size 200
-otps banner "ACHTUNG\\nLEBENSMITTEL"
+otps banner "ACHTUNG\nLEBENSMITTEL"
 otps label "Frisch\n16.10.2026" --size 72
 otps image photo.jpg --dither --density 4
 otps label "Ablaufdatum\n20.10." --copies 5
