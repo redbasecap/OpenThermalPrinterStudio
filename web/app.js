@@ -54,7 +54,10 @@ async function render() {
   }
   R.drawBits($("preview"), bitmap);
   const cm = (bitmap.height / 80).toFixed(1);
-  $("meta").textContent = `${cm} cm · ${bitmap.height} lines · 58 mm paper`;
+  const fit = bitmap.shrunk
+    ? ` · ${bitmap.shrunk} text line${bitmap.shrunk > 1 ? "s" : ""} shrunk to fit`
+    : "";
+  $("meta").textContent = `${cm} cm · ${bitmap.height} lines · 58 mm paper${fit}`;
 }
 
 // mode tabs

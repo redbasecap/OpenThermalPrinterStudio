@@ -59,28 +59,36 @@ export function banner(text, { font = "Archivo Black", weight = 400, border = tr
   return toBits(out);
 }
 
-// Horizontal lines across the paper, shrunk until the widest line fits.
+// Horizontal lines across the paper at the chosen size; a line too wide for
+// the paper is shrunk on its own, so short lines keep the full size.
 export function label(text, { font = "Archivo Black", weight = 400, size = 64, align = "center", border = false } = {}) {
-  const lines = (text || " ").split("\n");
   const ctx = canvas(1, 1).getContext("2d");
   const margin = border ? 24 : 12;
-  for (; size > 10; size -= 2) {
-    ctx.font = `${weight} ${size}px "${font}"`;
-    if (Math.max(...lines.map((l) => ctx.measureText(l).width)) <= WIDTH - margin * 2) break;
-  }
-  const lh = Math.round(size * 1.2);
-  const h = lh * lines.length + margin * 2;
+  const spec = (s) => `${weight} ${s}px "${font}"`;
+  const lines = (text || " ").split("\n").map((l) => {
+    let s = size;
+    for (; s > 10; s -= 2) {
+      ctx.font = spec(s);
+      if (ctx.measureText(l).width <= WIDTH - margin * 2) break;
+    }
+    return { text: l, size: s, lh: Math.round(s * 1.2) };
+  });
+  const h = lines.reduce((sum, l) => sum + l.lh, 0) + margin * 2;
   const cv = canvas(WIDTH, h);
   const c = cv.getContext("2d");
   c.fillStyle = "#fff"; c.fillRect(0, 0, WIDTH, h);
   c.fillStyle = "#000";
-  c.font = ctx.font;
   c.textBaseline = "middle";
   c.textAlign = align;
   const x = align === "left" ? margin : align === "right" ? WIDTH - margin : WIDTH / 2;
-  lines.forEach((l, i) => c.fillText(l, x, margin + lh * i + lh / 2));
+  let y = margin;
+  for (const l of lines) {
+    c.font = spec(l.size);
+    c.fillText(l.text, x, y + l.lh / 2);
+    y += l.lh;
+  }
   if (border) { c.lineWidth = 6; c.strokeRect(6, 6, WIDTH - 12, h - 12); }
-  return toBits(cv);
+  return { ...toBits(cv), shrunk: lines.filter((l) => l.size < size).length };
 }
 
 export function picture(img, { dither = true, threshold = 128, invert = false } = {}) {

@@ -36,19 +36,21 @@ def banner(text: str, border: bool = True, font: str | None = None) -> Image.Ima
 
 
 def label(text: str, size: int = 64, font: str | None = None) -> Image.Image:
-    """Horizontal text lines across the paper width, auto-shrunk to fit."""
-    lines = text.splitlines() or [""]
-    while size > 8:
-        f = _font(size, font)
-        if max(f.getlength(s) for s in lines) <= WIDTH - 16:
-            break
-        size -= 2
-    asc, desc = f.getmetrics()
-    lh = asc + desc + 4
-    img = Image.new("L", (WIDTH, lh * len(lines) + 16), 255)
+    """Horizontal text lines at the given size; a line too wide is shrunk on its own."""
+    fitted = []
+    for line in text.splitlines() or [""]:
+        s = size
+        while s > 10 and _font(s, font).getlength(line) > WIDTH - 24:
+            s -= 2
+        f = _font(s, font)
+        asc, desc = f.getmetrics()
+        fitted.append((line, f, asc + desc + 4))
+    img = Image.new("L", (WIDTH, sum(lh for *_, lh in fitted) + 24), 255)
     d = ImageDraw.Draw(img)
-    for i, s in enumerate(lines):
-        d.text(((WIDTH - f.getlength(s)) / 2, 8 + i * lh), s, font=f, fill=0)
+    y = 12
+    for line, f, lh in fitted:
+        d.text(((WIDTH - f.getlength(line)) / 2, y), line, font=f, fill=0)
+        y += lh
     return img
 
 
