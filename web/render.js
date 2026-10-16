@@ -32,29 +32,63 @@ function toBits(cv, { dither = false, threshold = 128, invert = false } = {}) {
   return { bits, height };
 }
 
+// Lay out one line of text with inline :sticker: tokens, relative to its baseline.
+const TOKEN = /(:[a-z]+:)/;
+function layout(ctx, line, font, s, stickers) {
+  ctx.font = font;
+  const d = s * 0.8; // sticker box, roughly cap height plus a little
+  const segs = [];
+  let width = 0, top = 0, bottom = 0;
+  for (const part of line.split(TOKEN)) {
+    if (!part) continue;
+    const img = TOKEN.test(part) && stickers?.get(part.slice(1, -1));
+    if (img) {
+      segs.push({ img, w: d + s * 0.16 });
+      width += d + s * 0.16;
+      top = Math.min(top, -s * 0.76);
+      bottom = Math.max(bottom, s * 0.04);
+    } else {
+      const m = ctx.measureText(part);
+      segs.push({ str: part, w: m.width });
+      width += m.width;
+      top = Math.min(top, -m.actualBoundingBoxAscent);
+      bottom = Math.max(bottom, m.actualBoundingBoxDescent);
+    }
+  }
+  if (!segs.length) top = -s * 0.7;
+  return { segs, width, top, bottom, s, d, font };
+}
+
+function drawLine(ctx, L, x, baseline) {
+  ctx.font = L.font;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  for (const seg of L.segs) {
+    if (seg.str) ctx.fillText(seg.str, x, baseline);
+    else ctx.drawImage(seg.img, x + L.s * 0.08, baseline - L.s * 0.76, L.d, L.d);
+    x += seg.w;
+  }
+}
+
 // Text running along the strip. size is the font size in dots; letters taller
 // than the paper is wide are shrunk until they fit across it.
-export function banner(text, { font = "Archivo Black", weight = 400, size = 260, border = true } = {}) {
+export function banner(text, { font = "Archivo Black", weight = 400, size = 260, border = true, stickers } = {}) {
   const avail = WIDTH - (border ? 48 : 16);
   const probe = canvas(1, 1).getContext("2d");
-  let m, textH, s = size;
+  let L, s = size;
   for (; s > 10; s -= 4) {
-    probe.font = `${weight} ${s}px "${font}"`;
-    m = probe.measureText(text || " ");
-    textH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
-    if (textH <= avail) break;
+    L = layout(probe, text || " ", `${weight} ${s}px "${font}"`, s, stickers);
+    if (L.bottom - L.top <= avail) break;
   }
   const pad = Math.max(24, Math.round(s * 0.15));
-  const textW = Math.ceil(m.actualBoundingBoxLeft + m.actualBoundingBoxRight);
-  const len = textW + pad * 2;
+  const len = Math.ceil(L.width) + pad * 2;
 
   const flat = canvas(len, WIDTH);
   const f = flat.getContext("2d");
   f.fillStyle = "#fff"; f.fillRect(0, 0, len, WIDTH);
   f.fillStyle = "#000"; f.strokeStyle = "#000";
   if (border) { f.lineWidth = 8; f.strokeRect(8, 8, len - 16, WIDTH - 16); }
-  f.font = probe.font;
-  f.fillText(text, pad + m.actualBoundingBoxLeft, (WIDTH - textH) / 2 + m.actualBoundingBoxAscent);
+  drawLine(f, L, pad, (WIDTH - (L.bottom - L.top)) / 2 - L.top);
 
   // rotate 90° counter-clockwise: the text reads bottom to top along the strip
   const out = canvas(WIDTH, len);
@@ -67,34 +101,30 @@ export function banner(text, { font = "Archivo Black", weight = 400, size = 260,
 
 // Horizontal lines across the paper at the chosen size; a line too wide for
 // the paper is shrunk on its own, so short lines keep the full size.
-export function label(text, { font = "Archivo Black", weight = 400, size = 64, align = "center", border = false } = {}) {
+export function label(text, { font = "Archivo Black", weight = 400, size = 64, align = "center", border = false, stickers } = {}) {
   const ctx = canvas(1, 1).getContext("2d");
   const margin = border ? 24 : 12;
-  const spec = (s) => `${weight} ${s}px "${font}"`;
   const lines = (text || " ").split("\n").map((l) => {
-    let s = size;
+    let L, s = size;
     for (; s > 10; s -= 2) {
-      ctx.font = spec(s);
-      if (ctx.measureText(l).width <= WIDTH - margin * 2) break;
+      L = layout(ctx, l, `${weight} ${s}px "${font}"`, s, stickers);
+      if (L.width <= WIDTH - margin * 2) break;
     }
-    return { text: l, size: s, lh: Math.round(s * 1.2) };
+    return { L, lh: Math.round(s * 1.2) };
   });
   const h = lines.reduce((sum, l) => sum + l.lh, 0) + margin * 2;
   const cv = canvas(WIDTH, h);
   const c = cv.getContext("2d");
   c.fillStyle = "#fff"; c.fillRect(0, 0, WIDTH, h);
   c.fillStyle = "#000";
-  c.textBaseline = "middle";
-  c.textAlign = align;
-  const x = align === "left" ? margin : align === "right" ? WIDTH - margin : WIDTH / 2;
   let y = margin;
-  for (const l of lines) {
-    c.font = spec(l.size);
-    c.fillText(l.text, x, y + l.lh / 2);
-    y += l.lh;
+  for (const { L, lh } of lines) {
+    const x = align === "left" ? margin : align === "right" ? WIDTH - margin - L.width : (WIDTH - L.width) / 2;
+    drawLine(c, L, x, y + lh / 2 + L.s * 0.35);
+    y += lh;
   }
   if (border) { c.lineWidth = 6; c.strokeRect(6, 6, WIDTH - 12, h - 12); }
-  return { ...toBits(cv), shrunk: lines.filter((l) => l.size < size).length };
+  return { ...toBits(cv), shrunk: lines.filter((l) => l.L.s < size).length };
 }
 
 export function picture(img, { dither = true, threshold = 128, invert = false } = {}) {

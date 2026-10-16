@@ -35,12 +35,14 @@ def main(argv: list[str] | None = None) -> int:
     for p in (b, lb, im):
         p.add_argument("--font", help="path to a .ttf/.otf font")
         p.add_argument("--density", type=int, default=3, help="print darkness 1..7")
+        p.add_argument("--copies", type=int, default=1, help="number of copies, 1 cm apart")
         p.add_argument("--name", default="LX", help="BLE name prefix")
         p.add_argument("--preview", metavar="PNG", help="save 1-bit preview and do not print")
     args = ap.parse_args(argv)
 
     img = build_image(args)
     rows = render.to_rows(img, dither=getattr(args, "dither", False))
+    rows = P.repeat_rows(rows, max(1, args.copies))
     if args.preview:
         out = Image.new("1", (P.WIDTH, len(rows)), 1)
         out.putdata([0 if px else 1 for row in rows for px in row])

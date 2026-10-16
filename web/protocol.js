@@ -69,3 +69,13 @@ export function packBits(bits, height) {
 
 export const toHex = (u8) => Array.from(u8, (b) => b.toString(16).padStart(2, "0")).join("");
 export const fromHex = (s) => Uint8Array.from(s.match(/../g) || [], (h) => parseInt(h, 16));
+
+// Repeat a bitmap for several copies in one job, with blank rows between them
+// (80 rows = 1 cm) so the copies can be torn apart.
+export function repeatBits({ bits, height }, copies, gap = 80) {
+  if (copies <= 1) return { bits, height };
+  const total = height * copies + gap * (copies - 1);
+  const out = new Uint8Array(WIDTH * total);
+  for (let i = 0; i < copies; i++) out.set(bits, WIDTH * i * (height + gap));
+  return { bits: out, height: total };
+}

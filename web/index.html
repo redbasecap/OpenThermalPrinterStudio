@@ -37,6 +37,7 @@
           <span>Text along the strip</span>
           <input id="banner-text" type="text" value="ACHTUNG LEBENSMITTEL" autocomplete="off">
         </label>
+        <div class="stickers" data-for="banner-text" role="group" aria-label="Insert a sticker"></div>
         <div class="row">
           <label class="field grow">
             <span>Typeface</span>
@@ -56,6 +57,7 @@
           <textarea id="label-text" rows="3">Frisch
 16.10.2026</textarea>
         </label>
+        <div class="stickers" data-for="label-text" role="group" aria-label="Insert a sticker"></div>
         <div class="row">
           <label class="field grow">
             <span>Typeface</span>
@@ -95,10 +97,16 @@
 
       <div class="divider"></div>
 
-      <label class="field">
-        <span>Darkness <output id="density-out">3</output> of 7</span>
-        <input id="density" type="range" min="1" max="7" value="3">
-      </label>
+      <div class="row">
+        <label class="field grow">
+          <span>Darkness <output id="density-out">3</output> of 7</span>
+          <input id="density" type="range" min="1" max="7" value="3">
+        </label>
+        <label class="field copies">
+          <span>Copies</span>
+          <input id="copies" type="number" min="1" max="50" value="1" inputmode="numeric">
+        </label>
+      </div>
 
       <div class="actions">
         <button id="print" class="primary" type="button">Print</button>
@@ -106,6 +114,16 @@
       </div>
 
       <ol id="log" class="log" aria-live="polite"></ol>
+
+      <section class="recent" aria-labelledby="recent-title">
+        <h2 id="recent-title">Recent</h2>
+        <p id="recent-empty" class="hint">Texts you print or save show up here, ready to print again.</p>
+        <ul id="recent"></ul>
+        <div id="undo" class="undo" role="status" hidden>
+          <span id="undo-text"></span>
+          <button id="undo-btn" type="button">Undo</button>
+        </div>
+      </section>
     </section>
 
     <section class="stage" aria-label="Print preview">

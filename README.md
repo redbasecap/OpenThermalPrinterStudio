@@ -36,6 +36,14 @@ Before connecting:
 | Label | Horizontal text lines, shrunk to fit the width |
 | Picture | Any image, scaled to 384 dots, with dithering for photos |
 
+Also in the studio:
+
+- **Stickers**: smileys and small line drawings (heart, star, warning sign, coffee, cat…).
+  Click one to insert it into the text as `:smile:`, `:heart:` and so on.
+- **Copies**: print several copies in one go, 1 cm apart for tearing.
+- **Recent**: every text you print or save is listed with **Print**, **Edit** and
+  **Delete** (with **Undo**). The list is stored in your browser only.
+
 ## CLI
 
 ```bash
@@ -43,8 +51,11 @@ pip install ./python
 otps banner "ACHTUNG LEBENSMITTEL" --size 200
 otps label "Frisch\n16.10.2026" --size 72
 otps image photo.jpg --dither --density 4
+otps label "Ablaufdatum\n20.10." --copies 5
 otps banner "TEST" --preview out.png   # render only, no printer needed
 ```
+
+Stickers and the recent list are studio features; the CLI prints `:smile:` as plain text.
 
 On macOS, run `otps` from Terminal or iTerm. The terminal app must have Bluetooth
 permission; tools launched from apps without a Bluetooth usage description are killed by

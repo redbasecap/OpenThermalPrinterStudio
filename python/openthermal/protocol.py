@@ -92,3 +92,13 @@ def pack_rows(rows: list[list[bool]]) -> list[bytes]:
         pkt.append(0x00)
         packets.append(bytes(pkt))
     return packets
+
+
+def repeat_rows(rows: list[list[bool]], copies: int, gap: int = 80) -> list[list[bool]]:
+    """Several copies in one job, with blank rows between them (80 rows = 1 cm)."""
+    out: list[list[bool]] = []
+    for i in range(copies):
+        if i:
+            out += [[False] * WIDTH for _ in range(gap)]
+        out += rows
+    return out

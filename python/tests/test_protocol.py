@@ -44,3 +44,11 @@ def test_raster_vectors():
     from make_vectors import pattern
     for v in V["raster"]:
         assert [p.hex() for p in P.pack_rows(pattern(v["height"]))] == v["packets"]
+
+
+def test_repeat_rows():
+    row = [True] * 384
+    assert P.repeat_rows([row], 1) == [row]
+    out = P.repeat_rows([row, row], 3, gap=5)
+    assert len(out) == 2 * 3 + 5 * 2
+    assert out[2] == [False] * 384 and out[7] == row
