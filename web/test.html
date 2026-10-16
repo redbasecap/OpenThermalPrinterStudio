@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Protocol tests</title>
+  <style>
+    body { font: 14px/1.5 ui-monospace, monospace; margin: 24px; background: #fff; color: #111; }
+    .pass { color: #13804a; } .fail { color: #c8402a; }
+  </style>
+</head>
+<body>
+  <h1>protocol.js vs vectors/vectors.json</h1>
+  <ol id="out"></ol>
+  <p id="sum"></p>
+  <script type="module">
+    import * as P from "./protocol.js";
+    const out = document.getElementById("out");
+    let pass = 0, fail = 0;
+    const check = (name, ok) => {
+      ok ? pass++ : fail++;
+      out.insertAdjacentHTML("beforeend", `<li class="${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"} ${name}</li>`);
+    };
+    const V = await (await fetch("../vectors/vectors.json")).json();
+    // same pattern as python/tests/make_vectors.py
+    const pattern = (h) => {
+      const bits = new Uint8Array(P.WIDTH * h);
+      for (let y = 0; y < h; y++) for (let x = 0; x < P.WIDTH; x++) bits[y * P.WIDTH + x] = (x + y) % 7 === 0 || x < y ? 1 : 0;
+      return bits;
+    };
+
+    check("crc check value 0x31C3", P.crc16xmodem(new TextEncoder().encode("123456789")) === 0x31c3);
+    for (const v of V.auth) {
+      check(`auth mac ${v.mac}`, P.toHex(P.authReply(P.fromHex(v.challenge), P.fromHex(v.mac))) === v.reply);
+    }
+    check("hello frame", P.toHex(P.helloFrame()) === V.frames.hello);
+    check("density frame", P.toHex(P.densityFrame(3)) === V.frames.density3);
+    check("print start", P.toHex(P.printFrame(1934, false)) === V.frames.start1934);
+    check("print end", P.toHex(P.printFrame(1934, true)) === V.frames.end1934);
+    for (const v of V.raster) {
+      const got = P.packBits(pattern(v.height), v.height).map(P.toHex);
+      check(`raster height ${v.height} (${v.packets.length} packets)`, JSON.stringify(got) === JSON.stringify(v.packets));
+    }
+    check("rewind is 1-based", P.rewindIndex(P.fromHex("5a0500830100")) === 130);
+    check("mac from hello", P.toHex(P.macFromHello(P.fromHex("5a0100031122334455660100"))) === "112233445566");
+
+    const sum = document.getElementById("sum");
+    sum.textContent = `${pass} passed, ${fail} failed`;
+    sum.className = fail ? "fail" : "pass";
+    document.title = fail ? "FAIL" : "PASS";
+  </script>
+</body>
+</html>

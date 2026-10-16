@@ -1,0 +1,166 @@
+:root {
+  --mint: #d5e5db;
+  --shell: #b7d0c2;
+  --shell-deep: #8fb3a0;
+  --ink: #17201b;
+  --muted: #4e6157;
+  --paper: #fcfcf9;
+  --cobalt: #2f45e8;
+  --alert: #c8402a;
+  --scale: 0.75;           /* preview pixels per printer dot */
+  --cm: calc(80px * var(--scale)); /* 203 dpi = 80 dots per cm */
+  --ui: "IBM Plex Sans", system-ui, sans-serif;
+  --display: "Bricolage Grotesque", var(--ui);
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--mint);
+  color: var(--ink);
+  font: 15px/1.45 var(--ui);
+  min-height: 100vh;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 2px; }
+
+/* header */
+.bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px;
+  padding: 18px clamp(16px, 4vw, 40px);
+}
+.mark {
+  margin: 0; font: 400 clamp(18px, 2.4vw, 24px)/1 var(--display);
+  letter-spacing: -0.02em;
+}
+.mark b { font-weight: 800; }
+.mark span { font-weight: 400; color: var(--muted); }
+.pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 9px 16px; border-radius: 999px; border: 0;
+  background: var(--paper); cursor: pointer; font-weight: 500; white-space: nowrap;
+  box-shadow: 0 1px 0 var(--shell-deep);
+}
+.pill .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--shell-deep); }
+.pill.on .dot { background: #1f9d55; box-shadow: 0 0 0 3px #1f9d5533; }
+.battery { font: 600 12px var(--mono); color: var(--muted); }
+
+.notice {
+  margin: 0 clamp(16px, 4vw, 40px) 8px; padding: 12px 16px; border-radius: 12px;
+  background: var(--paper); border-left: 4px solid var(--alert);
+}
+
+/* layout */
+.studio {
+  display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: clamp(16px, 4vw, 56px);
+  padding: 8px clamp(16px, 4vw, 40px) 40px; align-items: start;
+}
+@media (max-width: 760px) {
+  .studio { grid-template-columns: 1fr; }
+  :root { --scale: 0.62; }
+  .strip-wrap { max-height: none; }
+  .pill { padding: 8px 12px; font-size: 14px; }
+}
+
+/* composer */
+.composer {
+  background: var(--paper); border-radius: 20px; padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 2px 0 var(--shell-deep);
+}
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--mint); border-radius: 12px; padding: 4px; }
+.modes button {
+  border: 0; background: transparent; padding: 9px 0; border-radius: 9px; cursor: pointer;
+  font: 600 14px var(--ui); color: var(--muted);
+}
+.modes button[aria-selected="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px #0002; }
+.panel { display: flex; flex-direction: column; gap: 14px; }
+.panel[hidden] { display: none; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field > span { font-size: 13px; font-weight: 600; color: var(--muted); }
+.field output { font-family: var(--mono); color: var(--ink); }
+.grow { flex: 1; }
+.row { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+input[type="text"], textarea, select {
+  width: 100%; padding: 10px 12px; border-radius: 10px;
+  border: 1.5px solid var(--shell); background: #fff;
+}
+textarea { resize: vertical; }
+input[type="range"] { accent-color: var(--cobalt); width: 100%; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; padding-bottom: 10px; cursor: pointer; }
+.check input { accent-color: var(--cobalt); width: 17px; height: 17px; }
+.drop {
+  display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center;
+  padding: 22px 16px; border: 2px dashed var(--shell-deep); border-radius: 14px; cursor: pointer;
+  color: var(--muted); font-size: 13px;
+}
+.drop strong { color: var(--ink); font-size: 15px; }
+.drop.over { border-color: var(--cobalt); background: #2f45e80d; }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.divider { height: 1px; background: var(--mint); }
+
+.actions { display: flex; gap: 10px; }
+.primary, .ghost {
+  border-radius: 12px; padding: 13px 18px; font-weight: 600; cursor: pointer; border: 0;
+}
+.primary { flex: 1; background: var(--cobalt); color: #fff; font-size: 16px; }
+.primary:disabled { background: var(--shell-deep); cursor: progress; }
+.ghost { background: var(--mint); }
+
+.log {
+  list-style: none; margin: 0; padding: 0; max-height: 132px; overflow: auto;
+  font: 12px/1.6 var(--mono); color: var(--muted);
+}
+.log:empty { display: none; }
+.log li.err { color: var(--alert); }
+
+/* stage: the paper strip coming out of the printer */
+.stage { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.printer {
+  width: calc(384px * var(--scale) + 64px); height: 64px; border-radius: 26px 26px 14px 14px;
+  background: linear-gradient(#cfe1d6, var(--shell)); position: relative;
+  box-shadow: inset 0 -3px 0 var(--shell-deep), 0 6px 14px -8px #0004;
+}
+.slot {
+  position: absolute; left: 22px; right: 22px; bottom: 14px; height: 8px; border-radius: 4px;
+  background: var(--ink); opacity: 0.85;
+}
+.strip-wrap {
+  margin-top: -18px; padding-left: 34px; position: relative;
+  max-height: calc(100vh - 220px); min-height: 200px; overflow: auto; padding-bottom: 24px; overscroll-behavior: contain;
+}
+.strip {
+  position: relative; width: calc(384px * var(--scale));
+  background: var(--paper); padding-top: 4px;
+  filter: drop-shadow(0 6px 10px #0002);
+  margin-bottom: 10px;
+}
+/* torn edge at the bottom */
+.strip::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 10px; background: var(--paper);
+  -webkit-mask: conic-gradient(from 135deg at top, #000 90deg, #0000 0) top / 20px 10px repeat-x;
+          mask: conic-gradient(from 135deg at top, #000 90deg, #0000 0) top / 20px 10px repeat-x;
+}
+/* centimetre ruler alongside the strip */
+.strip::before {
+  content: ""; position: absolute; top: 4px; bottom: 0; left: -26px; width: 14px;
+  background:
+    repeating-linear-gradient(var(--muted) 0 1.5px, #0000 1.5px var(--cm)) left / 14px 100%,
+    repeating-linear-gradient(var(--shell-deep) 0 1px, #0000 1px calc(var(--cm) / 2)) left / 8px 100%;
+  background-repeat: no-repeat;
+}
+#preview {
+  display: block; width: 100%; height: auto;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+}
+.head {
+  position: absolute; left: -6px; right: -6px; height: 3px; top: 4px;
+  background: var(--cobalt); box-shadow: 0 0 0 4px #2f45e833, 0 0 18px #2f45e8;
+  transition: top 0.12s linear;
+}
+.meta { font: 12px var(--mono); color: var(--muted); margin: 14px 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .head { transition: none; }
+}
