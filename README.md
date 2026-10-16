@@ -32,7 +32,7 @@ Before connecting:
 
 | Mode | For |
 |---|---|
-| Banner | Text running along the strip, letters as tall as the paper is wide |
+| Banner | Text running along the strip, letter size adjustable up to the paper width |
 | Label | Horizontal text lines, shrunk to fit the width |
 | Picture | Any image, scaled to 384 dots, with dithering for photos |
 
@@ -40,7 +40,7 @@ Before connecting:
 
 ```bash
 pip install ./python
-otps banner "ACHTUNG LEBENSMITTEL"
+otps banner "ACHTUNG LEBENSMITTEL" --size 200
 otps label "Frisch\n16.10.2026" --size 72
 otps image photo.jpg --dither --density 4
 otps banner "TEST" --preview out.png   # render only, no printer needed

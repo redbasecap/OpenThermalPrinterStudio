@@ -32,14 +32,20 @@ function toBits(cv, { dither = false, threshold = 128, invert = false } = {}) {
   return { bits, height };
 }
 
-// Text running along the strip: letters as tall as the paper is wide.
-export function banner(text, { font = "Archivo Black", weight = 400, border = true } = {}) {
-  const size = 260, pad = 40;
+// Text running along the strip. size is the font size in dots; letters taller
+// than the paper is wide are shrunk until they fit across it.
+export function banner(text, { font = "Archivo Black", weight = 400, size = 260, border = true } = {}) {
+  const avail = WIDTH - (border ? 48 : 16);
   const probe = canvas(1, 1).getContext("2d");
-  probe.font = `${weight} ${size}px "${font}"`;
-  const m = probe.measureText(text || " ");
+  let m, textH, s = size;
+  for (; s > 10; s -= 4) {
+    probe.font = `${weight} ${s}px "${font}"`;
+    m = probe.measureText(text || " ");
+    textH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+    if (textH <= avail) break;
+  }
+  const pad = Math.max(24, Math.round(s * 0.15));
   const textW = Math.ceil(m.actualBoundingBoxLeft + m.actualBoundingBoxRight);
-  const textH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
   const len = textW + pad * 2;
 
   const flat = canvas(len, WIDTH);
@@ -56,7 +62,7 @@ export function banner(text, { font = "Archivo Black", weight = 400, border = tr
   o.translate(0, len);
   o.rotate(-Math.PI / 2);
   o.drawImage(flat, 0, 0);
-  return toBits(out);
+  return { ...toBits(out), shrunk: s < size ? 1 : 0 };
 }
 
 // Horizontal lines across the paper at the chosen size; a line too wide for

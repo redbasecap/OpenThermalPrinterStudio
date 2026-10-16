@@ -13,7 +13,7 @@ from . import render
 
 def build_image(args) -> Image.Image:
     if args.cmd == "banner":
-        return render.banner(args.text, border=not args.no_border, font=args.font)
+        return render.banner(args.text, size=args.size, border=not args.no_border, font=args.font)
     if args.cmd == "label":
         return render.label(args.text.replace("\\n", "\n"), size=args.size, font=args.font)
     return Image.open(args.path)
@@ -25,6 +25,7 @@ def main(argv: list[str] | None = None) -> int:
     b = sub.add_parser("banner", help="long text along the paper strip")
     b.add_argument("text")
     b.add_argument("--no-border", action="store_true")
+    b.add_argument("--size", type=int, default=260, help="font size in dots (shrunk if too tall)")
     lb = sub.add_parser("label", help="horizontal text, use \\n for line breaks")
     lb.add_argument("text")
     lb.add_argument("--size", type=int, default=64)

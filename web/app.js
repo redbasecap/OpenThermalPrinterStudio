@@ -41,7 +41,9 @@ async function render() {
     const f = FONTS[$(`${mode}-font`).value];
     await document.fonts.load(`${f.weight} 64px "${f.family}"`);
     bitmap = mode === "banner"
-      ? R.banner($("banner-text").value, { font: f.family, weight: f.weight, border: $("banner-border").checked })
+      ? R.banner($("banner-text").value, {
+          font: f.family, weight: f.weight, size: +$("banner-size").value, border: $("banner-border").checked,
+        })
       : R.label($("label-text").value, {
           font: f.family, weight: f.weight, size: +$("label-size").value,
           align: $("label-align").value, border: $("label-border").checked,
@@ -54,9 +56,9 @@ async function render() {
   }
   R.drawBits($("preview"), bitmap);
   const cm = (bitmap.height / 80).toFixed(1);
-  const fit = bitmap.shrunk
-    ? ` · ${bitmap.shrunk} text line${bitmap.shrunk > 1 ? "s" : ""} shrunk to fit`
-    : "";
+  const fit = !bitmap.shrunk ? ""
+    : mode === "banner" ? " · letters shrunk to fit the paper width"
+    : ` · ${bitmap.shrunk} text line${bitmap.shrunk > 1 ? "s" : ""} shrunk to fit`;
   $("meta").textContent = `${cm} cm · ${bitmap.height} lines · 58 mm paper${fit}`;
 }
 
