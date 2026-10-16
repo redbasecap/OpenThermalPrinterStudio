@@ -70,25 +70,34 @@ function drawLine(ctx, L, x, baseline) {
   }
 }
 
-// Text running along the strip. size is the font size in dots; letters taller
-// than the paper is wide are shrunk until they fit across it.
+// Text running along the strip, one or more lines side by side across the
+// paper. size is the font size in dots; if the lines together are taller than
+// the paper is wide, they are shrunk until they fit across it.
 export function banner(text, { font = "Archivo Black", weight = 400, size = 260, border = true, stickers } = {}) {
   const avail = WIDTH - (border ? 48 : 16);
   const probe = canvas(1, 1).getContext("2d");
-  let L, s = size;
+  const rows = (text || " ").split("\n");
+  let Ls, gap, total, s = size;
   for (; s > 10; s -= 4) {
-    L = layout(probe, text || " ", `${weight} ${s}px "${font}"`, s, stickers);
-    if (L.bottom - L.top <= avail) break;
+    Ls = rows.map((r) => layout(probe, r || " ", `${weight} ${s}px "${font}"`, s, stickers));
+    gap = Math.round(s * 0.18);
+    total = Ls.reduce((sum, L) => sum + L.bottom - L.top, 0) + gap * (Ls.length - 1);
+    if (total <= avail) break;
   }
   const pad = Math.max(24, Math.round(s * 0.15));
-  const len = Math.ceil(L.width) + pad * 2;
+  const textW = Math.ceil(Math.max(...Ls.map((L) => L.width)));
+  const len = textW + pad * 2;
 
   const flat = canvas(len, WIDTH);
   const f = flat.getContext("2d");
   f.fillStyle = "#fff"; f.fillRect(0, 0, len, WIDTH);
   f.fillStyle = "#000"; f.strokeStyle = "#000";
   if (border) { f.lineWidth = 8; f.strokeRect(8, 8, len - 16, WIDTH - 16); }
-  drawLine(f, L, pad, (WIDTH - (L.bottom - L.top)) / 2 - L.top);
+  let y = (WIDTH - total) / 2;
+  for (const L of Ls) {
+    drawLine(f, L, pad + (textW - L.width) / 2, y - L.top);
+    y += L.bottom - L.top + gap;
+  }
 
   // rotate 90° counter-clockwise: the text reads bottom to top along the strip
   const out = canvas(WIDTH, len);

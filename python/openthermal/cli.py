@@ -13,7 +13,7 @@ from . import render
 
 def build_image(args) -> Image.Image:
     if args.cmd == "banner":
-        return render.banner(args.text, size=args.size, border=not args.no_border, font=args.font)
+        return render.banner(args.text.replace("\\n", "\n"), size=args.size, border=not args.no_border, font=args.font)
     if args.cmd == "label":
         return render.label(args.text.replace("\\n", "\n"), size=args.size, font=args.font, wrap=not args.no_wrap)
     return Image.open(args.path)
@@ -22,7 +22,7 @@ def build_image(args) -> Image.Image:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="otps", description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    b = sub.add_parser("banner", help="long text along the paper strip")
+    b = sub.add_parser("banner", help="long text along the paper strip, use \\n for more lines")
     b.add_argument("text")
     b.add_argument("--no-border", action="store_true")
     b.add_argument("--size", type=int, default=260, help="font size in dots (shrunk if too tall)")

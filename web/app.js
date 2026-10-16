@@ -62,7 +62,7 @@ async function render() {
   R.drawBits($("preview"), bitmap);
   const cm = (bitmap.height / 80).toFixed(1);
   const fit = !bitmap.shrunk ? ""
-    : mode === "banner" ? " · letters shrunk to fit the paper width"
+    : mode === "banner" ? " · text shrunk to fit the paper width"
     : ` · ${bitmap.shrunk} text line${bitmap.shrunk > 1 ? "s" : ""} shrunk to fit`;
   const n = copies();
   const total = n > 1 ? ` · ${n} copies, ${(repeatBits(bitmap, n).height / 80).toFixed(1)} cm in total` : "";

@@ -32,7 +32,7 @@ Before connecting:
 
 | Mode | For |
 |---|---|
-| Banner | Text running along the strip, letter size adjustable up to the paper width |
+| Banner | Text running along the strip, one or more lines (Enter for a new line), size adjustable up to the paper width |
 | Label | Horizontal text; long lines wrap at word boundaries (or shrink, if wrapping is off) |
 | Picture | Any image, scaled to 384 dots, with dithering for photos |
 
@@ -49,6 +49,7 @@ Also in the studio:
 ```bash
 pip install ./python
 otps banner "ACHTUNG LEBENSMITTEL" --size 200
+otps banner "ACHTUNG\\nLEBENSMITTEL"
 otps label "Frisch\n16.10.2026" --size 72
 otps image photo.jpg --dither --density 4
 otps label "Ablaufdatum\n20.10." --copies 5

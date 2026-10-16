@@ -23,20 +23,28 @@ def _font(size: int, path: str | None = None) -> ImageFont.FreeTypeFont:
 
 
 def banner(text: str, size: int = 260, border: bool = True, font: str | None = None) -> Image.Image:
-    """Text running along the paper strip; letters too tall for the paper are shrunk."""
+    """Text running along the paper strip; several lines sit side by side across
+    the paper and are shrunk together if they are too tall for it."""
     avail = WIDTH - (48 if border else 16)
+    rows = text.splitlines() or [""]
     while True:
         f = _font(size, font)
-        l, t, r, b = f.getbbox(text)
-        if b - t <= avail or size <= 10:
+        boxes = [f.getbbox(r or " ") for r in rows]
+        gap = round(size * 0.18)
+        total = sum(b - t for _, t, _, b in boxes) + gap * (len(rows) - 1)
+        if total <= avail or size <= 10:
             break
         size -= 4
     pad = max(24, round(size * 0.15))
-    img = Image.new("L", (r - l + 2 * pad, WIDTH), 255)
+    text_w = max(r - l for l, _, r, _ in boxes)
+    img = Image.new("L", (text_w + 2 * pad, WIDTH), 255)
     d = ImageDraw.Draw(img)
     if border:
         d.rectangle([4, 4, img.width - 5, WIDTH - 5], outline=0, width=8)
-    d.text(((img.width - (r - l)) // 2 - l, (WIDTH - (b - t)) // 2 - t), text, font=f, fill=0)
+    y = (WIDTH - total) // 2
+    for row, (l, t, r, b) in zip(rows, boxes):
+        d.text((pad + (text_w - (r - l)) // 2 - l, y - t), row, font=f, fill=0)
+        y += b - t + gap
     return img.rotate(90, expand=True)
 
 

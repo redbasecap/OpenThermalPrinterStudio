@@ -80,6 +80,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > span { font-size: 13px; font-weight: 600; color: var(--muted); }
 .field output { font-family: var(--mono); color: var(--ink); }
+.field small { font-weight: 400; }
 .grow { flex: 1; }
 .copies { width: 84px; }
 .row .grow input[type="range"] { margin: 12px 0; }
