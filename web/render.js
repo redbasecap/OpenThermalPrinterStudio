@@ -99,12 +99,34 @@ export function banner(text, { font = "Archivo Black", weight = 400, size = 260,
   return { ...toBits(out), shrunk: s < size ? 1 : 0 };
 }
 
-// Horizontal lines across the paper at the chosen size; a line too wide for
-// the paper is shrunk on its own, so short lines keep the full size.
-export function label(text, { font = "Archivo Black", weight = 400, size = 64, align = "center", border = false, stickers } = {}) {
+// Greedy word wrap: break a line at spaces so each piece fits maxW at the given font.
+function wrapLine(ctx, line, font, s, stickers, maxW) {
+  const words = line.split(" ");
+  const out = [];
+  let cur = "";
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w;
+    if (cur && layout(ctx, next, font, s, stickers).width > maxW) {
+      out.push(cur);
+      cur = w;
+    } else {
+      cur = next;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+// Horizontal lines across the paper at the chosen size. With wrap, long lines
+// break at spaces; a line (or single word) still too wide is shrunk on its own.
+export function label(text, { font = "Archivo Black", weight = 400, size = 64, align = "center", border = false, wrap = true, stickers } = {}) {
   const ctx = canvas(1, 1).getContext("2d");
   const margin = border ? 24 : 12;
-  const lines = (text || " ").split("\n").map((l) => {
+  const spec = `${weight} ${size}px "${font}"`;
+  const rows = (text || " ")
+    .split("\n")
+    .flatMap((l) => (wrap ? wrapLine(ctx, l, spec, size, stickers, WIDTH - margin * 2) : [l]));
+  const lines = rows.map((l) => {
     let L, s = size;
     for (; s > 10; s -= 2) {
       L = layout(ctx, l, `${weight} ${s}px "${font}"`, s, stickers);

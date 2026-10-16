@@ -50,7 +50,8 @@ async function render() {
         })
       : R.label($("label-text").value, {
           font: f.family, weight: f.weight, size: +$("label-size").value,
-          align: $("label-align").value, border: $("label-border").checked, stickers,
+          align: $("label-align").value, border: $("label-border").checked,
+          wrap: $("label-wrap").checked, stickers,
         });
   }
   if (!bitmap) {
@@ -219,6 +220,7 @@ function currentEntry() {
     size: +$(`${mode}-size`).value,
     border: $(`${mode}-border`).checked,
     align: mode === "label" ? $("label-align").value : undefined,
+    wrap: mode === "label" ? $("label-wrap").checked : undefined,
   };
 }
 
@@ -239,6 +241,7 @@ async function applyEntry(e) {
   if (e.size) { $(`${e.mode}-size`).value = e.size; $(`${e.mode}-size-out`).textContent = e.size; }
   $(`${e.mode}-border`).checked = !!e.border;
   if (e.align) $("label-align").value = e.align;
+  if (e.mode === "label") $("label-wrap").checked = e.wrap !== false;
   await render();
 }
 

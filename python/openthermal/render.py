@@ -40,10 +40,27 @@ def banner(text: str, size: int = 260, border: bool = True, font: str | None = N
     return img.rotate(90, expand=True)
 
 
-def label(text: str, size: int = 64, font: str | None = None) -> Image.Image:
-    """Horizontal text lines at the given size; a line too wide is shrunk on its own."""
+def _wrap(line: str, f: ImageFont.FreeTypeFont, max_w: int) -> list[str]:
+    out, cur = [], ""
+    for w in line.split(" "):
+        nxt = f"{cur} {w}" if cur else w
+        if cur and f.getlength(nxt) > max_w:
+            out.append(cur)
+            cur = w
+        else:
+            cur = nxt
+    return out + [cur]
+
+
+def label(text: str, size: int = 64, font: str | None = None, wrap: bool = True) -> Image.Image:
+    """Horizontal text lines at the given size. With wrap, long lines break at
+    spaces; a line or single word still too wide is shrunk on its own."""
+    rows = text.splitlines() or [""]
+    if wrap:
+        f0 = _font(size, font)
+        rows = [part for line in rows for part in _wrap(line, f0, WIDTH - 24)]
     fitted = []
-    for line in text.splitlines() or [""]:
+    for line in rows:
         s = size
         while s > 10 and _font(s, font).getlength(line) > WIDTH - 24:
             s -= 2

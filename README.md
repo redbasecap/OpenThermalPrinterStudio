@@ -33,7 +33,7 @@ Before connecting:
 | Mode | For |
 |---|---|
 | Banner | Text running along the strip, letter size adjustable up to the paper width |
-| Label | Horizontal text lines, shrunk to fit the width |
+| Label | Horizontal text; long lines wrap at word boundaries (or shrink, if wrapping is off) |
 | Picture | Any image, scaled to 384 dots, with dithering for photos |
 
 Also in the studio:

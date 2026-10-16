@@ -15,7 +15,7 @@ def build_image(args) -> Image.Image:
     if args.cmd == "banner":
         return render.banner(args.text, size=args.size, border=not args.no_border, font=args.font)
     if args.cmd == "label":
-        return render.label(args.text.replace("\\n", "\n"), size=args.size, font=args.font)
+        return render.label(args.text.replace("\\n", "\n"), size=args.size, font=args.font, wrap=not args.no_wrap)
     return Image.open(args.path)
 
 
@@ -29,6 +29,7 @@ def main(argv: list[str] | None = None) -> int:
     lb = sub.add_parser("label", help="horizontal text, use \\n for line breaks")
     lb.add_argument("text")
     lb.add_argument("--size", type=int, default=64)
+    lb.add_argument("--no-wrap", action="store_true", help="shrink long lines instead of wrapping")
     im = sub.add_parser("image", help="print a picture")
     im.add_argument("path")
     im.add_argument("--dither", action="store_true", help="Floyd-Steinberg for photos")
